@@ -1,34 +1,41 @@
 import React from "react";
-import { v4 } from 'uuid';
+import { v4 } from "uuid";
 import PropTypes from "prop-types";
 import ReusableForm from "./ReusableForm";
-import Moment from 'moment';
+import Moment from "moment";
+import { useFirestore } from "react-redux-firebase";
 
-function NewTicketForm(props){
-
-  function handleNewTicketFormSubmission(event) {
+function NewTicketForm(props) {
+  const firestore = useFirestore();
+  function addTicketToFirestore(event) {
     event.preventDefault();
-    props.onNewTicketCreation({
-      names: event.target.names.value,
+
+    props.onNewTicketCreation();
+
+    // Here's how we will actually add a ticket to Firestore.
+
+    return firestore.collection("tickets").add({
+      day: event.target.day.value,
+      people: event.target.people.value,
       location: event.target.location.value,
-      issue: event.target.issue.value,
-      id: v4(),
-      timeOpen: new Moment(),
-      formattedWaitTime: new Moment().fromNow(true)
+      description: event.target.description.value,
+      timeOpen: firestore.FieldValue.serverTimestamp(),
     });
   }
 
   return (
     <React.Fragment>
-      <ReusableForm 
-        formSubmissionHandler={handleNewTicketFormSubmission}
-        buttonText="Help!" />
+      <ReusableForm
+        // Don't forget to change the name of the function here as well.
+        formSubmissionHandler={addTicketToFirestore}
+        buttonText="Share Memory"
+      />
     </React.Fragment>
   );
 }
 
 NewTicketForm.propTypes = {
-  onNewTicketCreation: PropTypes.func
+  onNewTicketCreation: PropTypes.func,
 };
 
 export default NewTicketForm;
